@@ -81,7 +81,18 @@ async def serialize(message: Message) -> dict[str, Any]:
         data["edited_unixtime"] = edit_date_unixtime
 
     if message_type == "service":
-        data["action"] = __serialize_action(message)
+        data["action"], action_data, add_actor = await __serialize_action(
+            message,
+        )
+        if add_actor:
+            data["actor"] = " ".join(
+                filter(
+                    None,
+                    [from_entity.first_name, from_entity.last_name],
+                ),
+            )
+        for key, value in action_data.items():
+            data[key] = value
     else:
         if forward := message.fwd_from:
             data["forwarded_from"] = (
