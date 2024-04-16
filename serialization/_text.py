@@ -22,16 +22,26 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageEntityUnknown,
     MessageEntityUrl,
 )
+from telethon.utils import (  # type: ignore[import-untyped]
+    add_surrogate,
+    del_surrogate,
+)
 
 
-def __serialize_text_entities(
+def __serialize_text(
     entities: list[Any] | None,
     text: str,
-) -> list[dict[str, str]]:
+    *,
+    serialize_entities: bool = False,
+) -> str | list[str | dict[str, Any]]:
     if not entities:
-        return []
+        if serialize_entities:
+            return [{"type": "plain", "text": text}] if text else []
+        return text or ""
 
-    text_entites = []
+    text = add_surrogate(text)
+
+    text_entities: list[str | dict[str, Any]] = []
     last_offset = 0
 
     for entity in entities:
@@ -40,16 +50,21 @@ def __serialize_text_entities(
         start = entity.offset
         end = start + entity.length
         if start > last_offset:
-            data = {
-                "type": "plain",
-                "text": text[last_offset:start],
-            }
-            text_entites.append(data)
+            plain = del_surrogate(text[last_offset:start])
+            text_entities.append(
+                {
+                    "type": "plain",
+                    "text": plain,
+                }
+                if serialize_entities
+                else plain,
+            )
 
+        inner_text = del_surrogate(text[start:end])
         last_offset = end
         data = {
             "type": entity_type,
-            "text": text[start:end],
+            "text": inner_text,
         }
 
         match entity:
@@ -62,9 +77,25 @@ def __serialize_text_entities(
             case MessageEntityTextUrl():
                 data["href"] = entity.url
 
-        text_entites.append(data)
+        text_entities.append(data)
 
-    return text_entites
+    # Replicate a bug in tdesktop export where a surrogate in the message
+    # causes an empty string to be added at the end
+    if (
+        text != del_surrogate(text)
+        and not isinstance(text_entities[-1], str)
+        and text_entities[-1]["type"] != "plain"
+    ):
+        text_entities.append(
+            {
+                "type": "plain",
+                "text": "",
+            }
+            if serialize_entities
+            else "",
+        )
+
+    return text_entities
 
 
 __entity_types = {

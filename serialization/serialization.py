@@ -5,8 +5,8 @@ from typing import Any
 from telethon.tl.types import Message, MessageService  # type: ignore[import-untyped]
 
 from ._action import __serialize_action
-from ._entities import __serialize_text_entities
 from ._helpers import __format_time, __serialize_peer, __serialize_reply
+from ._text import __serialize_text
 
 
 async def serialize(message: Message) -> dict[str, Any]:
@@ -64,10 +64,11 @@ async def serialize(message: Message) -> dict[str, Any]:
             if bot.username:
                 data["via_bot"] = bot.username
 
-    data["text"] = message.raw_text
-    data["text_entities"] = __serialize_text_entities(
+    data["text"] = __serialize_text(message.entities, message.raw_text)
+    data["text_entities"] = __serialize_text(
         message.entities,
         message.raw_text,
+        serialize_entities=True,
     )
 
     return data
