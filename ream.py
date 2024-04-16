@@ -3,6 +3,7 @@
 Takes no arguments, since all configuration is provided through ream.toml.
 """
 
+import json
 import logging
 from pathlib import Path
 
@@ -24,18 +25,32 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
         The chat to export.
 
     """
-    print("[")
+    entity = await client.get_entity(chat)
+    chat_data = {
+        "name": entity.first_name,
+        "type": "personal_chat",
+        "id": entity.id,
+    }
     async with client.takeout(
         users=True,
         files=True,
         max_file_size=config["export"]["max_file_size"],
     ) as takeout:
-        message: telethon.types.Message
-        async for message in takeout.iter_messages(chat, reverse=True):
-            data = await serialize(message)
-            print(data)
-            print(",")
-    print("]")
+        chat_data["messages"] = [
+            await serialize(message)
+            async for message in takeout.iter_messages(
+                chat,
+                reverse=True,
+            )
+        ]
+
+    Path("out.json").write_text(
+        json.dumps(
+            chat_data,
+            indent=1,
+            ensure_ascii=False,
+        ),
+    )
 
 
 async def __main(client: telethon.TelegramClient) -> None:
