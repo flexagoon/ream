@@ -6,8 +6,9 @@ from telethon.hints import EntitiesLike  # type: ignore[import-untyped]
 from telethon.tl.types import Message  # type: ignore[import-untyped]
 
 
-def __format_time(time: datetime) -> tuple[str, int]:
-    return time.strftime("%Y-%m-%dT%H:%M:%S"), int(time.timestamp())
+def __format_time(time: datetime) -> tuple[str, str]:
+    time = time.astimezone()
+    return time.strftime("%Y-%m-%dT%H:%M:%S"), str(int(time.timestamp()))
 
 
 async def __serialize_peer(
