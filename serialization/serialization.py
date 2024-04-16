@@ -24,7 +24,7 @@ async def serialize(message: Message) -> dict[str, Any]:
 
     """
     if not message.from_id:
-        return {}
+        message.from_id = message.peer_id
 
     message_type = "service" if type(message) is MessageService else "message"
 
