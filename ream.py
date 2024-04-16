@@ -1,12 +1,29 @@
+"""Exports important chats from your Telegram account.
+
+Takes no arguments, since all configuration is provided through ream.toml.
+"""
+
+import logging
+from pathlib import Path
+
+import telethon  # type: ignore[import-untyped]
 import tomllib
+from telethon.hints import EntityLike  # type: ignore[import-untyped]
 
-import serialization
-
-import telethon  # type: ignore
-from telethon.hints import EntityLike  # type: ignore
+from serialization.serialization import serialize
 
 
 async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
+    """Export data from a Telegram chat.
+
+    Parameters
+    ----------
+    client : telethon.TelegramClient
+        The Telegram client.
+    chat : EntityLike
+        The chat to export.
+
+    """
     print("[")
     async with client.takeout(
         users=True,
@@ -15,20 +32,20 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
     ) as takeout:
         message: telethon.types.Message
         async for message in takeout.iter_messages(chat, reverse=True):
-            data = await serialization.serialize(message)
+            data = await serialize(message)
             print(data)
             print(",")
     print("]")
 
 
-async def main(client: telethon.TelegramClient) -> None:
+async def __main(client: telethon.TelegramClient) -> None:
     for chat in config["export"]["chats"]:
-        print(f"Exporting chat {chat}...")
+        logging.info("Exporting chat %s...", chat)
         await export(client, chat)
 
 
 if __name__ == "__main__":
-    with open("ream.toml", "rb") as f:
+    with Path("ream.toml").open("rb") as f:
         config = tomllib.load(f)
 
     client = telethon.TelegramClient(
@@ -38,4 +55,4 @@ if __name__ == "__main__":
     )
 
     with client:
-        client.loop.run_until_complete(main(client))
+        client.loop.run_until_complete(__main(client))
