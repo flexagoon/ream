@@ -71,13 +71,24 @@ def __serialize_text(
             case MessageEntityMentionName():
                 data["user_id"] = entity.user_id
             case MessageEntityCustomEmoji():
-                data["document_id"] = entity.document_id
+                data["document_id"] = entity.document_id  # TODO download
             case MessageEntityPre():
                 data["language"] = entity.language
             case MessageEntityTextUrl():
                 data["href"] = entity.url
 
         text_entities.append(data)
+
+    if last_offset < len(text):
+        plain = del_surrogate(text[last_offset:])
+        text_entities.append(
+            {
+                "type": "plain",
+                "text": plain,
+            }
+            if serialize_entities
+            else plain,
+        )
 
     # Replicate a bug in tdesktop export where a surrogate in the message
     # causes an empty string to be added at the end
