@@ -42,9 +42,9 @@ async def __serialize_action(message: Message) -> dict[str, Any]:
             if action.duration:
                 data["duration_seconds"] = action.duration
                 data["discard_reason"] = ""
-                if action.reason:
-                    reason = type(action.reason)
-                    data["discard_reason"] = __call_discard_reasons[reason]
+            if action.reason:
+                reason = type(action.reason)
+                data["discard_reason"] = __call_discard_reasons[reason]
             data["action"] = "phone_call"
         case MessageActionScreenshotTaken():
             data["action"] = "take_screenshot"
@@ -76,7 +76,7 @@ async def __serialize_action(message: Message) -> dict[str, Any]:
             data = {}
             if action.emoticon:
                 data["emoticon"] = action.emoticon
-            data["action"] = "set_chat_theme"
+            data["action"] = "edit_chat_theme"
         case MessageActionGiftPremium():
             data = {}
             if action.amount:
