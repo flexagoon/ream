@@ -6,6 +6,7 @@ from telethon.tl.types import Message, MessageService  # type: ignore[import-unt
 
 from ._action import __serialize_action
 from ._helpers import __format_time, __serialize_peer, __serialize_reply
+from ._media import __serialize_media
 from ._text import __serialize_text
 
 
@@ -63,6 +64,8 @@ async def serialize(message: Message) -> dict[str, Any]:
             bot = await message.client.get_entity(message.via_bot_id)
             if bot.username:
                 data["via_bot"] = f"@{bot.username}"
+
+    data |= __serialize_media(message.media)
 
     data["text"] = __serialize_text(message.entities, message.raw_text)
     data["text_entities"] = __serialize_text(
