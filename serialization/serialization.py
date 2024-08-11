@@ -49,13 +49,16 @@ async def serialize(message: Message) -> dict[str, Any]:
         data |= await __serialize_peer(message.client, message.from_id, "from")
 
         if forward := message.fwd_from:
-            entity = forward.from_name or await message.client.get_entity(
-                forward.from_id,
-            )
-            if hasattr(entity, "first_name"):
-                data["forwarded_from"] = entity.first_name or entity.id
+            if forward.from_name:
+                data["forwarded_from"] = forward.from_name
             else:
-                data["forwarded_from"] = entity.title or entity.id
+                entity = await message.client.get_entity(
+                    forward.from_id,
+                )
+                if hasattr(entity, "first_name"):
+                    data["forwarded_from"] = entity.first_name or entity.id
+                else:
+                    data["forwarded_from"] = entity.title or entity.id
 
         if message.reply_to and hasattr(message.reply_to, "reply_to_msg_id"):
             data |= __serialize_reply(message)
