@@ -13,6 +13,8 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageMediaPhoto,
 )
 
+from ._phone import __format_phone
+
 MessageMedia: TypeAlias = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
 DocumentAttribute: TypeAlias = (
     DocumentAttributeSticker
@@ -45,7 +47,7 @@ def __serialize_media(media: MessageMedia) -> dict[str, Any]:
             data["contact_information"] = {
                 "first_name": media.first_name,
                 "last_name": media.last_name,
-                "phone_number": media.phone_number,
+                "phone_number": __format_phone(media.phone_number),
             }
             if media.vcard:
                 data["contact_vcard"] = media.vcard
