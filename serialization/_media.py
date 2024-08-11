@@ -10,6 +10,7 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     DocumentAttributeVideo,
     MessageMediaContact,
     MessageMediaDocument,
+    MessageMediaGeo,
     MessageMediaPhoto,
 )
 
@@ -51,6 +52,13 @@ def __serialize_media(media: MessageMedia) -> dict[str, Any]:
             }
             if media.vcard:
                 data["contact_vcard"] = media.vcard
+        case MessageMediaGeo():
+            data["location_information"] = {
+                "latitude": media.geo.latitude,
+                "longitude": media.geo.longitude,
+            }
+            if media.ttl_seconds:
+                data["live_location_period_seconds"] = media.ttl_seconds
 
     return data
 
