@@ -19,8 +19,11 @@ def __format_phone(phone: str) -> str:
     formatted_phone = ""
     for i in range(len(pattern)):
         if pattern[i] == "X":
-            formatted_phone += phone[0]
-            phone = phone[1:]
+            try:
+                formatted_phone += phone[0]
+                phone = phone[1:]
+            except IndexError:
+                break
         else:
             formatted_phone += pattern[i]
 
