@@ -8,8 +8,10 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     DocumentAttributeImageSize,
     DocumentAttributeSticker,
     DocumentAttributeVideo,
+    Message,
     MessageMediaContact,
     MessageMediaDocument,
+    MessageMediaGame,
     MessageMediaGeo,
     MessageMediaPhoto,
 )
@@ -25,7 +27,8 @@ DocumentAttribute: TypeAlias = (
 )
 
 
-def __serialize_media(media: MessageMedia) -> dict[str, Any]:
+async def __serialize_media(message: Message) -> dict[str, Any]:
+    media = message.media
     if not media:
         return {}
 
@@ -59,6 +62,16 @@ def __serialize_media(media: MessageMedia) -> dict[str, Any]:
             }
             if media.ttl_seconds:
                 data["live_location_period_seconds"] = media.ttl_seconds
+        case MessageMediaGame():
+            game = media.game
+            data["game_title"] = game.title
+            data["game_description"] = game.description
+            if message.via_bot_id and game.short_name:
+                bot = await message.client.get_entity(message.via_bot_id)
+                if bot.bot and bot.username:
+                    data["game_link"] = (
+                        f"https://t.me/{bot.username}?game={game.short_name}"
+                    )
 
     return data
 

@@ -65,7 +65,7 @@ async def serialize(message: Message) -> dict[str, Any]:
             if bot.username:
                 data["via_bot"] = f"@{bot.username}"
 
-    data |= __serialize_media(message.media)
+    data |= await __serialize_media(message)
 
     data["text"] = __serialize_text(message.entities, message.raw_text)
     data["text_entities"] = __serialize_text(
