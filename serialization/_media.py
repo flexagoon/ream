@@ -14,6 +14,7 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageMediaGame,
     MessageMediaGeo,
     MessageMediaPhoto,
+    MessageMediaPoll,
 )
 
 from ._phone import __format_phone
@@ -72,6 +73,8 @@ async def __serialize_media(message: Message) -> dict[str, Any]:
                     data["game_link"] = (
                         f"https://t.me/{bot.username}?game={game.short_name}"
                     )
+        case MessageMediaPoll():
+            data["poll"] = __serialize_poll(media)
 
     return data
 
@@ -146,3 +149,32 @@ def __document_attr(document: Document, req_type: type[_T_req]) -> _T_req | None
 
 def __fetch_media() -> str:
     return "(File not included. Change data exporting settings to download.)"
+
+
+def __serialize_poll(media: MessageMediaPoll) -> dict[str, Any]:
+    poll = {
+        "question": media.poll.question,
+        "closed": media.poll.closed,
+        "total_voters": media.results.total_voters,
+    }
+
+    answers = []
+    for poll_answer in media.poll.answers:
+        answer = {
+            "text": poll_answer.text,
+            "voters": 0,
+            "chosen": False,
+        }
+        if media.results.results:
+            votes = next(
+                filter(
+                    lambda voters: voters.option == poll_answer.option,
+                    media.results.results,
+                ),
+            )
+            answer["voters"] = votes.voters
+            answer["chosen"] = votes.chosen
+        answers.append(answer)
+    poll["answers"] = answers
+
+    return poll
