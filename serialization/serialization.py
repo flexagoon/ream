@@ -5,6 +5,7 @@ from typing import Any
 from telethon.tl.types import Message, MessageService  # type: ignore[import-untyped]
 
 from ._action import __serialize_action
+from ._buttons import __serialize_buttons
 from ._helpers import __format_time, __serialize_peer, __serialize_reply
 from ._media import __serialize_media
 from ._text import __serialize_text
@@ -76,5 +77,8 @@ async def serialize(message: Message) -> dict[str, Any]:
         message.raw_text,
         serialize_entities=True,
     )
+
+    if isinstance(message.reply_markup, ReplyInlineMarkup):
+        data["inline_bot_buttons"] = __serialize_buttons(message.reply_markup.rows)
 
     return data
