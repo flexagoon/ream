@@ -1,20 +1,43 @@
+[project]
+requires-python = ">=3.12"
+
 [tool.poetry]
-name = "ream"
-version = "0.1.0"
-description = "Automatic export for your Telegram chats"
-authors = ["flexagoon <code@fxgn.dev>"]
-license = "MIT"
-readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
 Telethon = "^1.34.0"
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.4"  # Linting and formatting
+mypy = "^1.10.0" # Type checking
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+select = ["ALL"] # Enable all linter rules
+preview = true   # Enable rules that are in beta
+ignore = [
+    # [suspicious-non-cryptographic-random-usage]
+    # `random` is not used for cryptographic purposes most of the time,
+    # so using it instead of the `secrets` module is usually fine.
+    "S311",
 
+    # [flake8-copyright]
+    # I don't use copyright headers in my code, so this ruleset is unneeded.
+    "CPY", 
 
-["mypy-telethon.*"]
-disabl_error_code = ["import-untyped"]
+    # [line-too-long]
+    # When making the line shorter is possible, ruff's formatter
+    # automatically takes care of that, so warning about long lines is
+    # unnecessary.
+    "E501", 
+
+    # [missing-todo-author], [missing-todo-link]
+    # I don't use TODO tags for repository issue tracking, so I don't need
+    # author and issue links on them.
+    "TD002", 
+    "TD003", 
+]
+
+[tool.mypy]
+strict = true # Enforce type annotations
+disable_error_code = "name-defined" # Ruff already reports undefined variables
