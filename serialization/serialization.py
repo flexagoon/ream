@@ -2,7 +2,11 @@
 
 from typing import Any
 
-from telethon.tl.types import Message, MessageService  # type: ignore[import-untyped]
+from telethon.tl.types import (  # type: ignore[import-untyped]
+    Message,
+    MessageService,
+    ReplyInlineMarkup,
+)
 
 from ._action import __serialize_action
 from ._buttons import __serialize_buttons
@@ -49,17 +53,13 @@ async def serialize(message: Message) -> dict[str, Any]:
     else:
         data |= await __serialize_peer(message.client, message.from_id, "from")
 
-        if forward := message.fwd_from:
-            if forward.from_name:
-                data["forwarded_from"] = forward.from_name
+        if forward := message.forward:
+            if sender := forward.sender:
+                data["forwarded_from"] = sender.first_name or sender.id
+            elif chat := forward.chat:
+                data["forwarded_from"] = chat.title or chat.id
             else:
-                entity = await message.client.get_entity(
-                    forward.from_id,
-                )
-                if hasattr(entity, "first_name"):
-                    data["forwarded_from"] = entity.first_name or entity.id
-                else:
-                    data["forwarded_from"] = entity.title or entity.id
+                data["forwarded_from"] = forward.original_fwd.from_name
 
         if message.reply_to and hasattr(message.reply_to, "reply_to_msg_id"):
             data |= __serialize_reply(message)
