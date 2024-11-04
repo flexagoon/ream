@@ -5,10 +5,10 @@ Takes no arguments, since all configuration is provided through ream.toml.
 
 import json
 import logging
+import tomllib
 from pathlib import Path
 
 import telethon  # type: ignore[import-untyped]
-import tomllib
 from telethon.hints import EntityLike  # type: ignore[import-untyped]
 
 from serialization.serialization import serialize
@@ -50,6 +50,7 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
             indent=1,
             ensure_ascii=False,
         ),
+        encoding="utf-8",
     )
 
 
