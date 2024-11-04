@@ -57,7 +57,7 @@ async def __serialize_media(message: Message) -> dict[str, Any]:
                 "phone_number": __format_phone(media.phone_number),
             }
             if media.vcard:
-                data["contact_vcard"] = media.vcard
+                data["contact_vcard"] = media.vcard  # TODO: download the vcard
         case MessageMediaGeo():
             data["location_information"] = {
                 "latitude": media.geo.latitude,
@@ -158,7 +158,7 @@ def __fetch_media() -> str:
 
 def __serialize_poll(media: MessageMediaPoll) -> dict[str, Any]:
     poll = {
-        "question": media.poll.question,
+        "question": media.poll.question.text,
         "closed": media.poll.closed,
         "total_voters": media.results.total_voters,
     }
@@ -166,7 +166,7 @@ def __serialize_poll(media: MessageMediaPoll) -> dict[str, Any]:
     answers = []
     for poll_answer in media.poll.answers:
         answer = {
-            "text": poll_answer.text,
+            "text": poll_answer.text.text,
             "voters": 0,
             "chosen": False,
         }
