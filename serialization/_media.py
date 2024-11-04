@@ -13,6 +13,7 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageMediaDocument,
     MessageMediaGame,
     MessageMediaGeo,
+    MessageMediaPaidMedia,
     MessageMediaPhoto,
     MessageMediaPoll,
     MessageMediaUnsupported,
@@ -77,7 +78,8 @@ async def __serialize_media(message: Message) -> dict[str, Any]:
                     )
         case MessageMediaPoll():
             data["poll"] = __serialize_poll(media)
-        # TODO: Paid media (no support in telethon)
+        case MessageMediaPaidMedia():
+            data["paid_stars_amount"] = media.stars_amount
         case MessageMediaUnsupported():
             log.warning("Unsupported media type: %s", message.media)
 
