@@ -1,4 +1,4 @@
-from typing import Any, TypeAlias, TypeVar
+from typing import Any
 
 from telethon.tl.types import (  # type: ignore[import-untyped]
     Document,
@@ -22,8 +22,8 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
 from ._helpers import log
 from ._phone import __format_phone
 
-MessageMedia: TypeAlias = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
-DocumentAttribute: TypeAlias = (
+type MessageMedia = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
+type DocumentAttribute = (
     DocumentAttributeSticker
     | DocumentAttributeAudio
     | DocumentAttributeVideo
@@ -144,10 +144,7 @@ def __document_type_attr(document: Document) -> DocumentAttribute | None:
     return None
 
 
-_T_req = TypeVar("_T_req")
-
-
-def __document_attr(document: Document, req_type: type[_T_req]) -> _T_req | None:
+def __document_attr[T](document: Document, req_type: type[T]) -> T | None:
     for attr in document.attributes:
         if isinstance(attr, req_type):
             return attr
