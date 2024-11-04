@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 from typing import Any
 
 from telethon.tl.types import (  # type: ignore[import-untyped]
@@ -6,6 +8,7 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageActionGameScore,
     MessageActionGeoProximityReached,
     MessageActionGiftPremium,
+    MessageActionGiftStars,
     MessageActionHistoryClear,
     MessageActionPhoneCall,
     MessageActionPinMessage,
@@ -21,6 +24,9 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
 )
 
 from ._helpers import __serialize_peer, __serialize_reply
+
+__currencies_path = Path(__file__).parent / "currencies.json"
+__currencies = json.loads(__currencies_path.read_text(encoding="utf-8"))
 
 
 async def __serialize_action(message: Message) -> dict[str, Any]:
@@ -92,6 +98,26 @@ async def __serialize_action(message: Message) -> dict[str, Any]:
             data["action"] = (
                 "set_same_chat_wallpaper" if action.same else "set_chat_wallpaper"
             )
+        case MessageActionGiftStars():
+            data["action"] = "send_stars_gift"
+
+            currency = __currencies[action.currency]
+            amount = action.amount / (10 ** currency["exp"])
+            amount_string = (
+                f"{amount:,}".replace(",", "^")
+                .replace(".", currency["decimal_sep"])
+                .replace("^", currency["thousands_sep"])
+            )
+
+            separator = " " if currency["space_between"] else ""
+            data["cost"] = (
+                f"{currency['symbol']}{amount_string}{separator}"
+                if currency["symbol_left"]
+                else f"{amount_string}{separator}{currency['symbol']}"
+            )
+
+            data["stars"] = action.stars
+        # TODO: stargift, not in telethon yet
         case _:
             data["action"] = "unknown"
             add_actor = False

@@ -1,5 +1,6 @@
 __pycache__
 *.session
 ream.toml
-*.json
+out.json
+correct.json
 reset.py
