@@ -5,8 +5,6 @@ from telethon.tl.types import (
     Document,
     DocumentAttributeAnimated,
     DocumentAttributeAudio,
-    DocumentAttributeFilename,
-    DocumentAttributeImageSize,
     DocumentAttributeSticker,
     DocumentAttributeVideo,
     Message,
@@ -18,9 +16,10 @@ from telethon.tl.types import (
     MessageMediaPhoto,
     MessageMediaPoll,
     MessageMediaUnsupported,
+    PhotoSize,
 )
 
-from ._helpers import __get_next_file_n, log
+from ._helpers import __download_file, __get_next_file_n, log
 from ._phone import __format_phone
 
 type MessageMedia = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
@@ -42,14 +41,17 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
     match media:
         case MessageMediaPhoto():
             photo = media.photo
-            data["photo"] = __fetch_media()  # photo.image
+            data["photo"] = await __download_file(
+                message,
+                path / f"photos/{photo.id}{message.file.ext}",
+            )
             size = photo.sizes[-1]
             data["width"] = size.w
             data["height"] = size.h
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaDocument():
-            data |= __serialize_document(media.document)
+            data |= await __serialize_document(message, path)
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaContact():
@@ -94,48 +96,70 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
     return data
 
 
-def __serialize_document(document: Document) -> dict[str, Any]:
-    data: dict[str, Any] = {
-        "file": __fetch_media(),  # document.file
-    }
+async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
+    file = message.file
+    document = message.media.document
 
-    file_name_attr = __document_attr(document, DocumentAttributeFilename)
-    if file_name_attr:
-        data["file_name"] = file_name_attr.file_name
+    data: dict[str, Any] = {}
 
-    if document.thumbs:
-        data["thumbnail"] = __fetch_media()  # document.thumb.file
+    if file.name:
+        data["file_name"] = file.name
+
+    directory = "files"
 
     type_attr = __document_type_attr(document)
     match type_attr:
         case DocumentAttributeSticker():
             data["media_type"] = "sticker"
             data["sticker_emoji"] = type_attr.alt
+            directory = "stickers"
         case DocumentAttributeVideo():
-            data["media_type"] = (
-                "video_message" if type_attr.round_message else "video_file"
-            )
+            if type_attr.round_message:
+                data["media_type"] = "video_message"
+                directory = "round_video_messages"
+            else:
+                data["media_type"] = "video_file"
+                directory = "video_files"
         case DocumentAttributeAudio():
             if type_attr.voice:
                 data["media_type"] = "voice_message"
+                directory = "voice_messages"
             else:
                 data["media_type"] = "audio_file"
                 data["performer"] = type_attr.performer
                 data["title"] = type_attr.title
         case DocumentAttributeAnimated():
             data["media_type"] = "animation"
+            directory = "animations"
+
+    ext = file.ext
+    if ext == ".oga":
+        ext = ".ogg"
+
+    data["file"] = await __download_file(
+        message,
+        path / directory / f"{document.id}{ext}",
+    )
+
+    if document.thumbs:
+        for thumb in document.thumbs:
+            if isinstance(thumb, PhotoSize):
+                data["thumbnail"] = await __download_file(
+                    message,
+                    path / directory / f"{document.id}{file.ext}_thumb.jpg",
+                    thumb=thumb,
+                )
+                break
 
     data["mime_type"] = document.mime_type
 
     if hasattr(type_attr, "duration"):
         data["duration_seconds"] = int(type_attr.duration)
 
-    if isinstance(type_attr, DocumentAttributeVideo):
-        data["width"] = type_attr.w
-        data["height"] = type_attr.h
-    elif image_size := __document_attr(document, DocumentAttributeImageSize):
-        data["width"] = image_size.w
-        data["height"] = image_size.h
+    if message.file.width:
+        data["width"] = message.file.width
+    if message.file.height:
+        data["height"] = message.file.height
 
     return data
 

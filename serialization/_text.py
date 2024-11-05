@@ -30,6 +30,8 @@ from telethon.utils import (
     del_surrogate,
 )
 
+from ._helpers import __download_file
+
 
 async def __serialize_text(
     message: Message,
@@ -93,13 +95,11 @@ async def __serialize_text(
 
                 file = emoji_dir / f"{entity.document_id}.{extension}"
 
-                if not file.exists():
-                    await message.client.download_media(
-                        emoji_data[0],
-                        file=file,
-                    )
-
-                data["document_id"] = f"{directory}/{entity.document_id}.{extension}"
+                data["document_id"] = await __download_file(
+                    emoji_data[0],
+                    file,
+                    client=message.client,
+                )
             case MessageEntityPre():
                 data["language"] = entity.language
             case MessageEntityTextUrl():

@@ -1,6 +1,10 @@
 __pycache__
 *.session
+
 ream.toml
-correct.json
+
+# Files that I use for testing when developing this
 reset.py
+correct/
 exports/
+justfile

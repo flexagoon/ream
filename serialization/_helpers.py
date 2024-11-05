@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import Any
 
 from telethon import TelegramClient
-from telethon.hints import EntitiesLike
-from telethon.tl.types import Message
+from telethon.hints import EntitiesLike, MessageLike
+from telethon.tl.types import Message, PhotoSize
 
 log = logging.getLogger(__name__)
 
@@ -53,3 +53,29 @@ def __get_next_file_n(path: Path) -> int:
         except (IndexError, ValueError):
             continue
     return n
+
+
+async def __download_file(
+    message: MessageLike,
+    file: Path,
+    *,
+    thumb: PhotoSize | None = None,
+    client: TelegramClient | None = None,
+) -> str:
+    dl_client = client or message.client
+    if not file.exists():
+        await dl_client.download_media(
+            message,
+            file,
+            thumb=thumb,
+            progress_callback=lambda current, total: log.info(
+                "Downloading %s: %s/%s",
+                file.name,
+                current,
+                total,
+            ),
+        )
+
+    relative_path = Path(file.parent.name) / file.name
+
+    return relative_path.as_posix()
