@@ -84,11 +84,17 @@ async def __serialize_text(
                         document_id=[entity.document_id],
                     ),
                 )
-                directory, extension = (
-                    ("stickers", "webp")
-                    if emoji_data[0].mime_type == "image/webp"
-                    else ("video_files", "webm")
-                )
+
+                match emoji_data[0].mime_type:
+                    case "image/webp":
+                        directory = "stickers"
+                        extension = "webp"
+                    case "video/webm":
+                        directory = "video_files"
+                        extension = "webm"
+                    case "application/x-tgsticker":
+                        directory = "stickers"
+                        extension = "tgs"
 
                 emoji_dir = path / directory
                 emoji_dir.mkdir(parents=True, exist_ok=True)
