@@ -2,9 +2,9 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from telethon import TelegramClient  # type: ignore[import-untyped]
-from telethon.hints import EntitiesLike  # type: ignore[import-untyped]
-from telethon.tl.types import Message  # type: ignore[import-untyped]
+from telethon import TelegramClient
+from telethon.hints import EntitiesLike
+from telethon.tl.types import Message
 
 log = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 import base64
 
-from telethon.tl.types import (  # type: ignore[import-untyped]
+from telethon.tl.types import (
     KeyboardButton,
     KeyboardButtonBuy,
     KeyboardButtonCallback,

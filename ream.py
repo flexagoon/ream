@@ -8,8 +8,8 @@ import logging
 import tomllib
 from pathlib import Path
 
-import telethon  # type: ignore[import-untyped]
-from telethon.hints import EntityLike  # type: ignore[import-untyped]
+import telethon
+from telethon.hints import EntityLike
 
 from serialization.serialization import serialize
 

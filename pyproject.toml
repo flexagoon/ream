@@ -41,3 +41,7 @@ ignore = [
 [tool.mypy]
 strict = true # Enforce type annotations
 disable_error_code = "name-defined" # Ruff already reports undefined variables
+
+[[tool.mypy.overrides]]
+module = "telethon.*"
+ignore_missing_imports = true

@@ -1,6 +1,6 @@
 from typing import Any
 
-from telethon.tl.types import (  # type: ignore[import-untyped]
+from telethon.tl.types import (
     MessageEntityBankCard,
     MessageEntityBlockquote,
     MessageEntityBold,
@@ -22,7 +22,7 @@ from telethon.tl.types import (  # type: ignore[import-untyped]
     MessageEntityUnknown,
     MessageEntityUrl,
 )
-from telethon.utils import (  # type: ignore[import-untyped]
+from telethon.utils import (
     add_surrogate,
     del_surrogate,
 )

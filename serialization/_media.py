@@ -1,6 +1,6 @@
 from typing import Any
 
-from telethon.tl.types import (  # type: ignore[import-untyped]
+from telethon.tl.types import (
     Document,
     DocumentAttributeAnimated,
     DocumentAttributeAudio,

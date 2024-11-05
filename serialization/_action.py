@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from telethon.tl.types import (  # type: ignore[import-untyped]
+from telethon.tl.types import (
     Message,
     MessageActionContactSignUp,
     MessageActionGameScore,
