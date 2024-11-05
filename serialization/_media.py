@@ -12,6 +12,7 @@ from telethon.tl.types import (
     MessageMediaDocument,
     MessageMediaGame,
     MessageMediaGeo,
+    MessageMediaGeoLive,
     MessageMediaPaidMedia,
     MessageMediaPhoto,
     MessageMediaPoll,
@@ -71,11 +72,15 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
                 data["contact_vcard"] = f"contacts/contact_{n}.vcard"
         case MessageMediaGeo():
             data["location_information"] = {
-                "latitude": media.geo.latitude,
-                "longitude": media.geo.longitude,
+                "latitude": media.geo.lat,
+                "longitude": media.geo.long,
             }
-            if media.ttl_seconds:
-                data["live_location_period_seconds"] = media.ttl_seconds
+        case MessageMediaGeoLive():
+            data["location_information"] = {
+                "latitude": media.geo.lat,
+                "longitude": media.geo.long,
+            }
+            data["live_location_period_seconds"] = media.period
         case MessageMediaGame():
             game = media.game
             data["game_title"] = game.title
