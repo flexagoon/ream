@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 from telethon.tl.types import (
@@ -19,7 +20,7 @@ from telethon.tl.types import (
     MessageMediaUnsupported,
 )
 
-from ._helpers import log
+from ._helpers import __get_next_file_n, log
 from ._phone import __format_phone
 
 type MessageMedia = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
@@ -31,7 +32,7 @@ type DocumentAttribute = (
 )
 
 
-async def __serialize_media(message: Message) -> dict[str, Any]:
+async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
     media = message.media
     if not media:
         return {}
@@ -58,7 +59,14 @@ async def __serialize_media(message: Message) -> dict[str, Any]:
                 "phone_number": __format_phone(media.phone_number),
             }
             if media.vcard:
-                data["contact_vcard"] = media.vcard  # TODO: download the vcard
+                contacts_dir = path / "contacts"
+                contacts_dir.mkdir(parents=True, exist_ok=True)
+
+                n = __get_next_file_n(contacts_dir)
+                vcard_file = contacts_dir / f"contact_{n}.vcard"
+                vcard_file.write_text(media.vcard)
+
+                data["contact_vcard"] = f"contacts/contact_{n}.vcard"
         case MessageMediaGeo():
             data["location_information"] = {
                 "latitude": media.geo.latitude,

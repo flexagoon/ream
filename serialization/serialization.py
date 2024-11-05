@@ -1,5 +1,6 @@
 """Provides the "serialize" function to serialize a Telegram message."""
 
+from pathlib import Path
 from typing import Any
 
 from telethon.tl.types import (
@@ -15,13 +16,17 @@ from ._media import __serialize_media
 from ._text import __serialize_text
 
 
-async def serialize(message: Message) -> dict[str, Any]:
+async def serialize(message: Message, path: Path) -> dict[str, Any]:
     """Serialize a Telegram message into a json-like object.
 
     Parameters
     ----------
     message : Message
         The message to serialize.
+
+    path : Path
+        The directory that the export is saved to. This is used to store
+        all the files and media.
 
     Returns
     -------
@@ -69,7 +74,7 @@ async def serialize(message: Message) -> dict[str, Any]:
             if bot.username:
                 data["via_bot"] = f"@{bot.username}"
 
-    data |= await __serialize_media(message)
+    data |= await __serialize_media(message, path)
 
     data["text"] = __serialize_text(message.entities, message.raw_text)
     data["text_entities"] = __serialize_text(

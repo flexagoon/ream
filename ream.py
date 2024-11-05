@@ -26,6 +26,9 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
 
     """
     entity = await client.get_entity(chat)
+
+    path = Path(f"{config['export']['path']}/{entity.id}")
+
     chat_data = {
         "name": entity.first_name,
         "type": "personal_chat",
@@ -37,14 +40,14 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
         max_file_size=config["export"]["max_file_size"],
     ) as takeout:
         chat_data["messages"] = [
-            await serialize(message)
+            await serialize(message, path)
             async for message in takeout.iter_messages(
                 chat,
                 reverse=True,
             )
         ]
 
-    Path("out.json").write_text(
+    Path(path / "export.json").write_text(
         json.dumps(
             chat_data,
             indent=1,

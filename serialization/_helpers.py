@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from telethon import TelegramClient
@@ -41,3 +42,14 @@ def __serialize_reply(
     if reply.reply_to_peer_id:
         data["reply_to_peer_id"] = reply.reply_to_peer_id
     return data
+
+
+def __get_next_file_n(path: Path) -> int:
+    n = 1
+    for file in path.iterdir():
+        try:
+            file_n = int(file.stem.split("_")[1])
+            n = max(n, file_n + 1)
+        except (IndexError, ValueError):
+            continue
+    return n
