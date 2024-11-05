@@ -131,8 +131,10 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
                 directory = "voice_messages"
             else:
                 data["media_type"] = "audio_file"
-                data["performer"] = type_attr.performer
-                data["title"] = type_attr.title
+                if type_attr.performer:
+                    data["performer"] = type_attr.performer
+                if type_attr.title:
+                    data["title"] = type_attr.title
         case DocumentAttributeAnimated():
             data["media_type"] = "animation"
             directory = "animations"
