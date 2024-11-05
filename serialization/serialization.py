@@ -76,10 +76,10 @@ async def serialize(message: Message, path: Path) -> dict[str, Any]:
 
     data |= await __serialize_media(message, path)
 
-    data["text"] = __serialize_text(message.entities, message.raw_text)
-    data["text_entities"] = __serialize_text(
-        message.entities,
-        message.raw_text,
+    data["text"] = await __serialize_text(message, path)
+    data["text_entities"] = await __serialize_text(
+        message,
+        path,
         serialize_entities=True,
     )
 

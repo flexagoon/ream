@@ -1,6 +1,9 @@
+from pathlib import Path
 from typing import Any
 
+from telethon import functions
 from telethon.tl.types import (
+    Message,
     MessageEntityBankCard,
     MessageEntityBlockquote,
     MessageEntityBold,
@@ -28,12 +31,15 @@ from telethon.utils import (
 )
 
 
-def __serialize_text(
-    entities: list[Any] | None,
-    text: str,
+async def __serialize_text(
+    message: Message,
+    path: Path,
     *,
     serialize_entities: bool = False,
 ) -> str | list[str | dict[str, Any]]:
+    entities = message.entities
+    text = message.raw_text
+
     if not entities:
         if serialize_entities:
             return [{"type": "plain", "text": text}] if text else []
@@ -71,7 +77,29 @@ def __serialize_text(
             case MessageEntityMentionName():
                 data["user_id"] = entity.user_id
             case MessageEntityCustomEmoji():
-                data["document_id"] = entity.document_id  # TODO download
+                emoji_data = await message.client(
+                    functions.messages.GetCustomEmojiDocumentsRequest(
+                        document_id=[entity.document_id],
+                    ),
+                )
+                directory, extension = (
+                    ("stickers", "webp")
+                    if emoji_data[0].mime_type == "image/webp"
+                    else ("video_files", "webm")
+                )
+
+                emoji_dir = path / directory
+                emoji_dir.mkdir(parents=True, exist_ok=True)
+
+                file = emoji_dir / f"{entity.document_id}.{extension}"
+
+                if not file.exists():
+                    await message.client.download_media(
+                        emoji_data[0],
+                        file=file,
+                    )
+
+                data["document_id"] = f"{directory}/{entity.document_id}.{extension}"
             case MessageEntityPre():
                 data["language"] = entity.language
             case MessageEntityTextUrl():
