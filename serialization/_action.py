@@ -55,7 +55,7 @@ async def __serialize_action(message: Message) -> dict[str, Any]:
         case MessageActionScreenshotTaken():
             data["action"] = "take_screenshot"
         case MessageActionContactSignUp():
-            data["action"] = "join_telegram"
+            data["action"] = "joined_telegram"
         case MessageActionGeoProximityReached():
             add_actor = False
             data = {"distance": action.distance}
