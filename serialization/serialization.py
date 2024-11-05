@@ -60,7 +60,14 @@ async def serialize(message: Message, path: Path) -> dict[str, Any]:
 
         if forward := message.forward:
             if sender := forward.sender:
-                data["forwarded_from"] = sender.first_name or sender.id
+                if sender.first_name:
+                    data["forwarded_from"] = (
+                        f"{sender.first_name} {sender.last_name}"
+                        if sender.last_name
+                        else sender.first_name
+                    )
+                else:
+                    data["forwarded_from"] = sender.id
             elif chat := forward.chat:
                 data["forwarded_from"] = chat.title or chat.id
             else:
