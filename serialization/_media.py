@@ -72,13 +72,13 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
                 data["contact_vcard"] = f"contacts/contact_{n}.vcard"
         case MessageMediaGeo():
             data["location_information"] = {
-                "latitude": media.geo.lat,
-                "longitude": media.geo.long,
+                "latitude": round(media.geo.lat, 6),
+                "longitude": round(media.geo.long, 6),
             }
         case MessageMediaGeoLive():
             data["location_information"] = {
-                "latitude": media.geo.lat,
-                "longitude": media.geo.long,
+                "latitude": round(media.geo.lat, 6),
+                "longitude": round(media.geo.long, 6),
             }
             data["live_location_period_seconds"] = media.period
         case MessageMediaGame():
