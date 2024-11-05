@@ -172,22 +172,48 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
 
 
 def __document_type_attr(document: Document) -> DocumentAttribute | None:
-    if sticker := __document_attr(document, DocumentAttributeSticker):
-        return sticker
-    if audio := __document_attr(document, DocumentAttributeAudio):
-        return audio
-    if video := __document_attr(document, DocumentAttributeVideo):
-        return video
-    if animated := __document_attr(document, DocumentAttributeAnimated):
-        return animated
-    return None
-
-
-def __document_attr[T](document: Document, req_type: type[T]) -> T | None:
+    type_attr = None
     for attr in document.attributes:
-        if isinstance(attr, req_type):
-            return attr
-    return None
+        if not (
+            isinstance(
+                attr,
+                DocumentAttributeSticker
+                | DocumentAttributeVideo
+                | DocumentAttributeAudio
+                | DocumentAttributeAnimated,
+            )
+        ):
+            continue
+
+        if type_attr is None:
+            type_attr = attr
+
+        if isinstance(
+            attr,
+            DocumentAttributeAnimated,
+        ) and isinstance(
+            type_attr,
+            DocumentAttributeVideo,
+        ):
+            type_attr = attr
+
+        if type(attr) is not type(type_attr):
+            continue
+
+        if isinstance(attr, DocumentAttributeSticker):
+            type_attr.alt = type_attr.alt or attr.alt
+
+        if isinstance(attr, DocumentAttributeAudio):
+            type_attr.voice = type_attr.voice or attr.voice
+            type_attr.performer = type_attr.performer or attr.performer
+            type_attr.title = type_attr.title or attr.title
+            type_attr.duration = type_attr.duration or attr.duration
+
+        if isinstance(attr, DocumentAttributeVideo):
+            type_attr.round_message = type_attr.round_message or attr.round_message
+            type_attr.duration = type_attr.duration or attr.duration
+
+    return type_attr
 
 
 def __fetch_media() -> str:
