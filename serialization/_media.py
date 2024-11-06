@@ -190,7 +190,7 @@ def __document_type_attr(document: Document) -> DocumentAttribute | None:
 
         if isinstance(
             attr,
-            DocumentAttributeAnimated,
+            DocumentAttributeAnimated | DocumentAttributeSticker,
         ) and isinstance(
             type_attr,
             DocumentAttributeVideo,
