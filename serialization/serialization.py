@@ -79,6 +79,8 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
                         if sender.last_name
                         else sender.first_name
                     )
+                elif sender.deleted:
+                    data["forwarded_from"] = None
                 else:
                     data["forwarded_from"] = sender.id
             elif chat := forward.chat:
