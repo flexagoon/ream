@@ -1,8 +1,10 @@
 """Provides the "serialize" function to serialize a Telegram message."""
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
+from telethon.errors import FloodWaitError
 from telethon.tl.types import (
     Message,
     MessageService,
@@ -11,7 +13,7 @@ from telethon.tl.types import (
 
 from ._action import __serialize_action
 from ._buttons import __serialize_buttons
-from ._helpers import __format_time, __serialize_peer, __serialize_reply
+from ._helpers import __format_time, __serialize_peer, __serialize_reply, log
 from ._media import __serialize_media
 from ._text import __serialize_text
 
@@ -34,6 +36,17 @@ async def serialize(message: Message, path: Path) -> dict[str, Any]:
         The serialized message.
 
     """
+    try:
+        return await __try_serialize(message, path)
+    except FloodWaitError as e:
+        log.warning("Flood wait, waiting for: %s", e.seconds)
+        await asyncio.sleep(e.seconds)
+        return await serialize(message, path)
+
+
+async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
+    log.info("Serializing message %s", message.id)
+
     if not message.from_id:
         message.from_id = message.peer_id
 
