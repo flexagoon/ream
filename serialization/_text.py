@@ -67,6 +67,8 @@ async def __serialize_text(
                 if serialize_entities
                 else plain,
             )
+        elif start < last_offset:
+            continue
 
         inner_text = del_surrogate(text[start:end])
         last_offset = end
@@ -124,10 +126,12 @@ async def __serialize_text(
             else plain,
         )
 
-    # Replicate a bug in tdesktop export where a surrogate in the message
+    text = del_surrogate(text)
+
+    # Replicate a bug in tdesktop export where unicode in the message
     # causes an empty string to be added at the end
     if (
-        text != del_surrogate(text)
+        len(text) != len(text.encode())
         and not isinstance(text_entities[-1], str)
         and text_entities[-1]["type"] != "plain"
     ):
