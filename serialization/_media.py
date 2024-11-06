@@ -137,7 +137,7 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
                     data["title"] = type_attr.title
         case DocumentAttributeAnimated():
             data["media_type"] = "animation"
-            directory = "animations"
+            directory = "video_files"
 
     ext = file.ext
     if ext == ".oga":
