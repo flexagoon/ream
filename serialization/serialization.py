@@ -1,6 +1,7 @@
 """Provides the "serialize" function to serialize a Telegram message."""
 
 import asyncio
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -13,9 +14,11 @@ from telethon.tl.types import (
 
 from ._action import __serialize_action
 from ._buttons import __serialize_buttons
-from ._helpers import __format_time, __serialize_peer, __serialize_reply, log
+from ._helpers import __format_time, __serialize_peer, __serialize_reply
 from ._media import __serialize_media
 from ._text import __serialize_text
+
+log = logging.getLogger(__name__)
 
 
 async def serialize(message: Message, path: Path) -> dict[str, Any]:

@@ -13,6 +13,8 @@ from telethon.hints import EntityLike
 
 from serialization.serialization import serialize
 
+log = logging.getLogger(__name__)
+
 
 async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
     """Export data from a Telegram chat.
@@ -68,9 +70,26 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
 
 
 async def __main(client: telethon.TelegramClient) -> None:
+    if (
+        "ream" in config
+        and "log_level" in config["ream"]
+        and config["ream"]["log_level"]
+        in {
+            "NOTESET",
+            "DEBUG",
+            "INFO",
+            "WARNING",
+            "ERROR",
+            "CRITICAL",
+        }
+    ):
+        logging.basicConfig(level=config["ream"]["log_level"])
+    else:
+        logging.basicConfig(level=logging.INFO)
+
     await client.get_dialogs()
     for chat in config["export"]["chats"]:
-        logging.info("Exporting chat %s...", chat)
+        log.info("Exporting chat %s...", chat)
         await export(client, chat)
 
 

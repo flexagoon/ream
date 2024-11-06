@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -20,8 +21,10 @@ from telethon.tl.types import (
     PhotoSize,
 )
 
-from ._helpers import __download_file, __get_next_file_n, log
+from ._helpers import __download_file, __get_next_file_n
 from ._phone import __format_phone
+
+log = logging.getLogger(__name__)
 
 type MessageMedia = MessageMediaPhoto | MessageMediaDocument | MessageMediaContact
 type DocumentAttribute = (
