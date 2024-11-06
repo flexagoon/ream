@@ -70,7 +70,7 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
         data["edited_unixtime"] = edit_date_unixtime
 
     if message_type == "service":
-        data |= await __serialize_action(message)
+        data |= await __serialize_action(message, path)
     else:
         data |= await __serialize_peer(message.client, message.from_id, "from")
 

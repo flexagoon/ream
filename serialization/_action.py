@@ -23,13 +23,13 @@ from telethon.tl.types import (
     PhoneCallDiscardReasonMissed,
 )
 
-from ._helpers import __serialize_peer, __serialize_reply
+from ._helpers import __download_file, __serialize_peer, __serialize_reply
 
 __currencies_path = Path(__file__).parent / "currencies.json"
 __currencies = json.loads(__currencies_path.read_text(encoding="utf-8"))
 
 
-async def __serialize_action(message: Message) -> dict[str, Any]:
+async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
     action = message.action
     data: dict[str, Any] = {}
     add_actor = True
@@ -91,8 +91,16 @@ async def __serialize_action(message: Message) -> dict[str, Any]:
                 data["months"] = action.months
             data["action"] = "send_premium_gift"
         case MessageActionSuggestProfilePhoto():
-            # TODO: Implement photo
             data["action"] = "suggest_profile_photo"
+            photo = action.photo
+            data["photo"] = await __download_file(
+                message,
+                path / f"photos/{photo.id}.jpg",
+            )
+            sizes = [size for size in photo.sizes if size.type != "i"]
+            size = sizes[-1]
+            data["width"] = size.w
+            data["height"] = size.h
         case MessageActionSetChatWallPaper():
             data = __serialize_reply(message, "message_id")
             data["action"] = (
