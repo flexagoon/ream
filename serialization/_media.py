@@ -195,7 +195,9 @@ def __document_type_attr(document: Document) -> DocumentAttribute | None:
             type_attr,
             DocumentAttributeVideo,
         ):
+            duration = type_attr.duration
             type_attr = attr
+            type_attr.duration = duration
 
         if type(attr) is not type(type_attr):
             continue
