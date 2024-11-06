@@ -58,6 +58,7 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
 
 
 async def __main(client: telethon.TelegramClient) -> None:
+    await client.get_dialogs()
     for chat in config["export"]["chats"]:
         logging.info("Exporting chat %s...", chat)
         await export(client, chat)
