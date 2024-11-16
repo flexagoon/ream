@@ -49,9 +49,8 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
                 message,
                 path / f"photos/{photo.id}{message.file.ext}",
             )
-            size = photo.sizes[-1]
-            data["width"] = size.w
-            data["height"] = size.h
+            data["width"] = message.file.width
+            data["height"] = message.file.height
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaDocument():
