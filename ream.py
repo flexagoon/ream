@@ -35,8 +35,9 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
 
     if export_json.exists():
         chat_data = json.load(export_json.open())
-        last_message = chat_data["messages"][-1]["id"]
+        last_message = chat_data["messages"][-1]["id"] if chat_data["messages"] else 0
     else:
+        export_json.parent.mkdir(exist_ok=True, parents=True)
         chat_data = {
             "name": entity.first_name,
             "type": "personal_chat",
