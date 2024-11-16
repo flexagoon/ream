@@ -94,8 +94,9 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["action"] = "suggest_profile_photo"
             photo = action.photo
             data["photo"] = await __download_file(
-                message,
+                photo,
                 path / f"photos/{photo.id}.jpg",
+                client=message.client,
             )
             sizes = [size for size in photo.sizes if size.type != "i"]
             size = sizes[-1]
