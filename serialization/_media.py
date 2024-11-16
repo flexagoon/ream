@@ -45,12 +45,15 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
     match media:
         case MessageMediaPhoto():
             photo = media.photo
-            data["photo"] = await __download_file(
-                message,
-                path / f"photos/{photo.id}{message.file.ext}",
-            )
-            data["width"] = message.file.width
-            data["height"] = message.file.height
+            if photo:
+                data["photo"] = await __download_file(
+                    message,
+                    path / f"photos/{photo.id}{message.file.ext}",
+                )
+                data["width"] = message.file.width
+                data["height"] = message.file.height
+            else:
+                data["photo"] = "(File unavailable, please try again later)"
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaDocument():
