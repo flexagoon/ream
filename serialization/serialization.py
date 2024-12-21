@@ -91,7 +91,7 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
             else:
                 data["forwarded_from"] = forward.original_fwd.from_name
 
-        data |= __serialize_reply(message)
+        data |= await __serialize_reply(message)
 
         if message.via_bot_id:
             bot = await message.client.get_entity(message.via_bot_id)
