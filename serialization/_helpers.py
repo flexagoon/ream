@@ -42,7 +42,7 @@ async def __serialize_reply(
     reply = message.reply_to
     if hasattr(reply, "reply_to_msg_id"):
         data[label] = reply.reply_to_msg_id
-    if peer := reply.reply_to_peer_id:
+    if hasattr(reply, "reply_to_peer_id") and (peer := reply.reply_to_peer_id):
         if type(peer) is not int:
             entity = await message.client.get_entity(peer)
             peer = entity.id
