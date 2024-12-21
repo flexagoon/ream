@@ -36,9 +36,12 @@ def __serialize_reply(
     message: Message,
     label: str = "reply_to_message_id",
 ) -> dict[str, Any]:
+    if not message.reply_to:
+        return {}
     data = {}
     reply = message.reply_to
-    data[label] = reply.reply_to_msg_id
+    if hasattr(reply, "reply_to_msg_id"):
+        data[label] = reply.reply_to_msg_id
     if reply.reply_to_peer_id:
         data["reply_to_peer_id"] = reply.reply_to_peer_id
     return data
