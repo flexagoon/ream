@@ -48,6 +48,9 @@ ignore = [
     "PLR0915",
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
 [tool.mypy]
 strict = true # Enforce type annotations
 disable_error_code = "name-defined" # Ruff already reports undefined variables
