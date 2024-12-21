@@ -24,6 +24,7 @@ from telethon.tl.types import (
     MessageEntityUnderline,
     MessageEntityUnknown,
     MessageEntityUrl,
+    TextWithEntities,
 )
 from telethon.utils import (
     add_surrogate,
@@ -34,13 +35,13 @@ from ._helpers import __download_file
 
 
 async def __serialize_text(
-    message: Message,
+    message: Message | TextWithEntities,
     path: Path,
     *,
     serialize_entities: bool = False,
 ) -> str | list[str | dict[str, Any]]:
     entities = message.entities
-    text = message.raw_text
+    text = message.raw_text if isinstance(message, Message) else message.text
 
     if not entities:
         if serialize_entities:

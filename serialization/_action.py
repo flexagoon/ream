@@ -16,6 +16,7 @@ from telethon.tl.types import (
     MessageActionSetChatTheme,
     MessageActionSetChatWallPaper,
     MessageActionSetMessagesTTL,
+    MessageActionStarGift,
     MessageActionSuggestProfilePhoto,
     PhoneCallDiscardReasonBusy,
     PhoneCallDiscardReasonDisconnect,
@@ -24,6 +25,7 @@ from telethon.tl.types import (
 )
 
 from ._helpers import __download_file, __serialize_peer, __serialize_reply
+from ._text import __serialize_text
 
 __currencies_path = Path(__file__).parent / "currencies.json"
 __currencies = json.loads(__currencies_path.read_text(encoding="utf-8"))
@@ -126,7 +128,16 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             )
 
             data["stars"] = action.stars
-        # TODO: stargift, not in telethon yet
+        case MessageActionStarGift():
+            gift = action.gift
+            data |= {
+                "action": "send_star_gift",
+                "gift_id": gift.id,
+                "stars": gift.stars,
+                "is_limited": gift.limited,
+                "is_anonymous": action.name_hidden,
+                "gift_text": await __serialize_text(action.message, path),
+            }
         case _:
             data["action"] = "unknown"
             add_actor = False
