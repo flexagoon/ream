@@ -70,9 +70,9 @@ async def __download_file(
 ) -> str:
     dl_client = client or message.client
     if not file.exists():
-        await dl_client.download_media(
+        content = await dl_client.download_media(
             message,
-            file,
+            file=bytes,
             thumb=thumb,
             progress_callback=lambda current, total: log.info(
                 "Downloading %s: %s/%s",
@@ -81,6 +81,10 @@ async def __download_file(
                 total,
             ),
         )
+        # Telethon allows to download media directly to a file, but that way
+        # the file would be created even before the media is fully downloaded,
+        # so the download won't be resumed after an interruption.
+        file.write_bytes(content)
 
     relative_path = Path(file.parent.name) / file.name
 
