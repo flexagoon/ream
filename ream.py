@@ -6,6 +6,7 @@ Takes no arguments, since all configuration is provided through ream.toml.
 import json
 import logging
 import tomllib
+from contextlib import suppress
 from pathlib import Path
 
 import telethon
@@ -45,6 +46,11 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
             "messages": [],
         }
         last_message = 0
+
+    # Close the takeout session if one is already open. If it's not open,
+    # `client.end_takeout` will raise a TypeError, so it's suppressed.
+    with suppress(TypeError):
+        await client.end_takeout(success=False)
 
     async with client.takeout(
         users=True,

@@ -4,7 +4,6 @@ __pycache__
 ream.toml
 
 # Files that I use for testing when developing this
-reset.py
 test.py
 test/
 correct/
