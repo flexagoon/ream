@@ -110,6 +110,9 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
     file = message.file
     document = message.media.document
 
+    if not document:
+        return {}
+
     data: dict[str, Any] = {}
 
     if file.name:
