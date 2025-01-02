@@ -54,10 +54,14 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
                 data["height"] = message.file.height
             else:
                 data["photo"] = "(File unavailable, please try again later)"
+            if media.spoiler:
+                data["media_spoiler"] = True
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaDocument():
             data |= await __serialize_document(message, path)
+            if media.spoiler:
+                data["media_spoiler"] = True
             if media.ttl_seconds:
                 data["self_destruct_period_seconds"] = media.ttl_seconds
         case MessageMediaContact():
