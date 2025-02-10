@@ -45,6 +45,9 @@ app_hash = "abcdefg01234"
 max_file_size = 5000000000 # Max size for files to be downloaded
 chats = [ 123456, 7891234 ] # A list of chat ids to download
 path = "exports" # A directory in which your chat exports will be saved
+batch_size = 100 # How many messages to download at once. Higher values make
+                 # the export faster, but increase the risk of getting rate
+                 # limited.
 
 [ream]
 log_level = "ERROR" # Optional: log level for the application, defaults to INFO

@@ -3,6 +3,7 @@
 Takes no arguments, since all configuration is provided through ream.toml.
 """
 
+import asyncio
 import json
 import logging
 import tomllib
@@ -57,21 +58,32 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
         files=True,
         max_file_size=config["export"]["max_file_size"],
     ) as takeout:
-        async for message in takeout.iter_messages(
+        messages = takeout.iter_messages(
             chat,
             reverse=True,
             offset_id=last_message,
-        ):
-            chat_data["messages"] += [await serialize(message, path)]
+        )
 
-            export_json.write_text(
-                json.dumps(
-                    chat_data,
-                    indent=1,
-                    ensure_ascii=False,
-                ),
-                encoding="utf-8",
-            )
+        batch_size = config["export"]["batch_size"]
+        batch = []
+        async for message in messages:
+            batch.append(message)
+
+            if len(batch) >= batch_size:
+                tasks = [serialize(message, path) for message in batch]
+
+                chat_data["messages"] += await asyncio.gather(*tasks)
+
+                export_json.write_text(
+                    json.dumps(
+                        chat_data,
+                        indent=1,
+                        ensure_ascii=False,
+                    ),
+                    encoding="utf-8",
+                )
+
+                batch = []
 
 
 async def __main(client: telethon.TelegramClient) -> None:
@@ -106,6 +118,7 @@ if __name__ == "__main__":
         "ream",
         config["api"]["app_id"],
         config["api"]["app_hash"],
+        app_version="1.0.0",
     )
 
     with client:
