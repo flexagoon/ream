@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from telethon import functions
+from telethon import TelegramClient, functions
 from telethon.tl.types import (
     Message,
     MessageEntityBankCard,
@@ -39,6 +39,7 @@ async def __serialize_text(
     path: Path,
     *,
     serialize_entities: bool = False,
+    client_override: TelegramClient | None = None,
 ) -> str | list[str | dict[str, Any]]:
     entities = message.entities
     text = message.raw_text if isinstance(message, Message) else message.text
@@ -82,6 +83,9 @@ async def __serialize_text(
             case MessageEntityMentionName():
                 data["user_id"] = entity.user_id
             case MessageEntityCustomEmoji():
+                if client_override:
+                    message.client = client_override
+
                 emoji_data = await message.client(
                     functions.messages.GetCustomEmojiDocumentsRequest(
                         document_id=[entity.document_id],
