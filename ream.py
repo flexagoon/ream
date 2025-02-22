@@ -84,6 +84,19 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
                 )
 
                 batch = []
+        if batch:
+            tasks = [serialize(message, path) for message in batch]
+
+            chat_data["messages"] += await asyncio.gather(*tasks)
+
+            export_json.write_text(
+                json.dumps(
+                    chat_data,
+                    indent=1,
+                    ensure_ascii=False,
+                ),
+                encoding="utf-8",
+            )
 
 
 async def __main(client: telethon.TelegramClient) -> None:
