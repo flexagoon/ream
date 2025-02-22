@@ -84,6 +84,7 @@ async def __download_file(
         # Telethon allows to download media directly to a file, but that way
         # the file would be created even before the media is fully downloaded,
         # so the download won't be resumed after an interruption.
+        file.parent.mkdir(exist_ok=True, parents=True)
         file.write_bytes(content)
 
     relative_path = Path(file.parent.name) / file.name
