@@ -5,7 +5,7 @@ from typing import Any
 
 from telethon import TelegramClient
 from telethon.hints import EntitiesLike, MessageLike
-from telethon.tl.types import Message, PhotoSize
+from telethon.tl.types import Message, PeerChannel, PeerChat, PeerUser, PhotoSize
 
 log = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ async def __serialize_peer(
     }
 
 
-async def __serialize_reply(
+def __serialize_reply(
     message: Message,
     label: str = "reply_to_message_id",
 ) -> dict[str, Any]:
@@ -43,9 +43,13 @@ async def __serialize_reply(
     if hasattr(reply, "reply_to_msg_id"):
         data[label] = reply.reply_to_msg_id
     if hasattr(reply, "reply_to_peer_id") and (peer := reply.reply_to_peer_id):
-        if type(peer) is not int:
-            entity = await message.client.get_entity(peer)
-            peer = entity.id
+        match peer:
+            case PeerChannel():
+                peer = f"channel{peer.channel_id}"
+            case PeerChat():
+                peer = f"chat{peer.chat_id}"
+            case PeerUser():
+                peer = f"user{peer.user_id}"
         data["reply_to_peer_id"] = peer
     return data
 

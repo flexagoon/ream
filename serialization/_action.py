@@ -37,12 +37,12 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
     add_actor = True
     match action:
         case MessageActionPinMessage():
-            data = await __serialize_reply(message, "message_id")
+            data = __serialize_reply(message, "message_id")
             data["action"] = "pin_message"
         case MessageActionHistoryClear():
             data["action"] = "clear_history"
         case MessageActionGameScore():
-            data = await __serialize_reply(message, "game_message_id")
+            data = __serialize_reply(message, "game_message_id")
             data["score"] = action.score
             data["action"] = "score_in_game"
         case MessageActionPhoneCall():
@@ -105,7 +105,7 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["width"] = size.w
             data["height"] = size.h
         case MessageActionSetChatWallPaper():
-            data = await __serialize_reply(message, "message_id")
+            data = __serialize_reply(message, "message_id")
             data["action"] = (
                 "set_same_chat_wallpaper" if action.same else "set_chat_wallpaper"
             )
