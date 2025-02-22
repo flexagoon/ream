@@ -54,6 +54,7 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
         await client.end_takeout(success=False)
 
     async with client.takeout(
+        contacts=True,
         users=True,
         files=True,
         max_file_size=config["export"]["max_file_size"],
