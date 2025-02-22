@@ -137,8 +137,12 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
                 "is_limited": gift.limited,
                 "is_anonymous": action.name_hidden,
                 "gift_text": await __serialize_text(
-                    action.message, path, client_override=message.client
-                ),
+                    action.message,
+                    path,
+                    client_override=message.client,
+                )
+                if action.message
+                else "",
             }
         case _:
             data["action"] = "unknown"
