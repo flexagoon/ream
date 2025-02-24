@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from telethon import TelegramClient
+from telethon.errors.rpcbaseerrors import BadRequestError
 from telethon.hints import EntitiesLike, MessageLike
 from telethon.tl.types import Message, PeerChannel, PeerChat, PeerUser, PhotoSize
 
@@ -74,17 +75,21 @@ async def __download_file(
 ) -> str:
     dl_client = client or message.client
     if not file.exists():
-        content = await dl_client.download_media(
-            message,
-            file=bytes,
-            thumb=thumb,
-            progress_callback=lambda current, total: log.info(
-                "Downloading %s: %s/%s",
-                file.name,
-                current,
-                total,
-            ),
-        )
+        try:
+            content = await dl_client.download_media(
+                message,
+                file=bytes,
+                thumb=thumb,
+                progress_callback=lambda current, total: log.info(
+                    "Downloading %s: %s/%s",
+                    file.name,
+                    current,
+                    total,
+                ),
+            )
+        except BadRequestError:
+            return "(File unavailable, please try again later)"
+
         # Telethon allows to download media directly to a file, but that way
         # the file would be created even before the media is fully downloaded,
         # so the download won't be resumed after an interruption.
