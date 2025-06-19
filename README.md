@@ -23,9 +23,8 @@ for filenames) is treated as a bug.**
 
 ## Installation
 
-- Install [Poetry](https://python-poetry.org)
+- Install [uv](https://github.com/astral-sh/uv)
 - Clone this repository
-- Run `poetry install` to get the dependencies
 
 ## Configuration
 
@@ -56,7 +55,7 @@ log_level = "ERROR" # Optional: log level for the application, defaults to INFO
 ## Running
 
 ```bash
-poetry run ream.py
+uv run ream.py
 ```
 
 The first time you run the program, It'll ask you to enter your phone number
