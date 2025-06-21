@@ -55,6 +55,14 @@ log_level = "ERROR" # Optional: log level for the application, defaults to INFO
 ## Running
 
 ```bash
+uv run list_chats.py
+```
+
+You can use this command to get the list of chat ids that you can use in the
+`ream.toml` file above.
+
+
+```bash
 uv run ream.py
 ```
 
