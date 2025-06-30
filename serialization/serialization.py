@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import Any
 
 from telethon.errors import FloodWaitError
+from telethon.tl.custom.message import Message
 from telethon.tl.types import (
-    Message,
     MessageService,
     ReplyInlineMarkup,
 )
@@ -53,8 +53,11 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
     if not message.from_id:
         message.from_id = message.peer_id
 
-    message_type = "service" if type(message) is MessageService else "message"
+    message_type = "service" if type(message) is MessageService else "message"  # type: ignore[comparison-overlap]
 
+    if not message.date:
+        log.warning("Message %s has no date, skipping", message.id)
+        return {}
     date, date_unixtime = __format_time(message.date)
 
     data = {

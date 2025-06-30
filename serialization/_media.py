@@ -2,13 +2,15 @@ import logging
 from pathlib import Path
 from typing import Any
 
+from telethon.tl.custom.message import Message
 from telethon.tl.types import (
     Document,
     DocumentAttributeAnimated,
     DocumentAttributeAudio,
     DocumentAttributeSticker,
     DocumentAttributeVideo,
-    Message,
+    DocumentEmpty,
+    GeoPoint,
     MessageMediaContact,
     MessageMediaDocument,
     MessageMediaGame,
@@ -80,15 +82,23 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
 
                 data["contact_vcard"] = f"contacts/contact_{n}.vcard"
         case MessageMediaGeo():
-            data["location_information"] = {
-                "latitude": round(media.geo.lat, 6),
-                "longitude": round(media.geo.long, 6),
-            }
+            data["location_information"] = (
+                {
+                    "latitude": round(media.geo.lat, 6),
+                    "longitude": round(media.geo.long, 6),
+                }
+                if isinstance(media.geo, GeoPoint)
+                else "null"
+            )
         case MessageMediaGeoLive():
-            data["location_information"] = {
-                "latitude": round(media.geo.lat, 6),
-                "longitude": round(media.geo.long, 6),
-            }
+            data["location_information"] = (
+                {
+                    "latitude": round(media.geo.lat, 6),
+                    "longitude": round(media.geo.long, 6),
+                }
+                if isinstance(media.geo, GeoPoint)
+                else "null"
+            )
             data["live_location_period_seconds"] = media.period
         case MessageMediaGame():
             game = media.game
@@ -111,10 +121,12 @@ async def __serialize_media(message: Message, path: Path) -> dict[str, Any]:
 
 
 async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
+    assert isinstance(message.media, MessageMediaDocument)  # noqa: S101
+
     file = message.file
     document = message.media.document
 
-    if not document:
+    if not document or isinstance(document, DocumentEmpty):
         return {}
 
     data: dict[str, Any] = {}
@@ -172,7 +184,7 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
 
     data["mime_type"] = document.mime_type
 
-    if hasattr(type_attr, "duration"):
+    if type_attr and hasattr(type_attr, "duration"):
         data["duration_seconds"] = int(type_attr.duration)
 
     if message.file.width:
@@ -183,6 +195,8 @@ async def __serialize_document(message: Message, path: Path) -> dict[str, Any]:
     return data
 
 
+# Document attributes sometimes require extra fields, yeah Telegram api is messy
+# mypy: disable-error-code="union-attr"
 def __document_type_attr(document: Document) -> DocumentAttribute | None:
     type_attr = None
     for attr in document.attributes:
@@ -235,7 +249,7 @@ def __fetch_media() -> str:
 
 
 def __serialize_poll(media: MessageMediaPoll) -> dict[str, Any]:
-    poll = {
+    poll: dict[str, Any] = {
         "question": media.poll.question.text,
         "closed": media.poll.closed,
         "total_voters": media.results.total_voters,

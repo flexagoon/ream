@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from telethon.tl.custom.message import Message
 from telethon.tl.types import (
-    Message,
     MessageActionContactSignUp,
     MessageActionGameScore,
     MessageActionGeoProximityReached,
@@ -24,6 +24,9 @@ from telethon.tl.types import (
     PhoneCallDiscardReasonDisconnect,
     PhoneCallDiscardReasonHangup,
     PhoneCallDiscardReasonMissed,
+    PhotoEmpty,
+    PhotoSize,
+    StarGiftUnique,
 )
 
 from ._helpers import __download_file, __serialize_peer, __serialize_reply
@@ -97,13 +100,21 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
         case MessageActionSuggestProfilePhoto():
             data["action"] = "suggest_profile_photo"
             photo = action.photo
+
+            if isinstance(photo, PhotoEmpty):
+                return {}
+
             data["photo"] = await __download_file(
                 photo,
                 path / f"photos/{photo.id}.jpg",
                 client=message.client,
             )
+
             sizes = [size for size in photo.sizes if size.type != "i"]
             size = sizes[-1]
+            if not isinstance(size, PhotoSize):
+                raise TypeError
+
             data["width"] = size.w
             data["height"] = size.h
         case MessageActionSetChatWallPaper():
@@ -132,6 +143,10 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["stars"] = action.stars
         case MessageActionStarGift():
             gift = action.gift
+
+            if isinstance(gift, StarGiftUnique):
+                return {}
+
             data |= {
                 "action": "send_star_gift",
                 "gift_id": gift.id,
@@ -157,7 +172,7 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["action"] = "unknown"
             add_actor = False
 
-    if add_actor:
+    if add_actor and message.from_id:
         data |= await __serialize_peer(message.client, message.from_id, "actor")
 
     return data

@@ -5,8 +5,9 @@ from typing import Any
 
 from telethon import TelegramClient
 from telethon.errors.rpcbaseerrors import BadRequestError
-from telethon.hints import EntitiesLike, MessageLike
-from telethon.tl.types import Message, PeerChannel, PeerChat, PeerUser, PhotoSize
+from telethon.hints import EntitiesLike
+from telethon.tl.custom.message import Message
+from telethon.tl.types import PeerChannel, PeerChat, PeerUser, Photo, PhotoSize, User
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +23,10 @@ async def __serialize_peer(
     prefix: str,
 ) -> dict[str, str | int]:
     entity = await client.get_entity(peer)
+
+    if not isinstance(entity, User):
+        raise TypeError
+
     return {
         prefix: " ".join(
             filter(
@@ -67,13 +72,16 @@ def __get_next_file_n(path: Path) -> int:
 
 
 async def __download_file(
-    message: MessageLike,
+    message: Message | Photo,
     file: Path,
     *,
     thumb: PhotoSize | None = None,
     client: TelegramClient | None = None,
 ) -> str:
-    dl_client = client or message.client
+    dl_client = client or getattr(message, "client", None)
+    if not isinstance(dl_client, TelegramClient):
+        raise MissingClientError
+
     if not file.exists():
         try:
             content = await dl_client.download_media(
@@ -99,3 +107,8 @@ async def __download_file(
     relative_path = Path(file.parent.name) / file.name
 
     return relative_path.as_posix()
+
+
+class MissingClientError(Exception):
+    def __init__(self) -> None:
+        super().__init__("Message object has no client and no override was passed")

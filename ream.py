@@ -9,27 +9,37 @@ import logging
 import tomllib
 from contextlib import suppress
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import telethon
-from telethon.hints import EntityLike
+from telethon import TelegramClient
+from telethon.errors.rpcerrorlist import TakeoutInitDelayError
+from telethon.tl.types import User
 
 from serialization.serialization import serialize
+
+if TYPE_CHECKING:
+    from telethon.tl.custom.message import Message
+
 
 log = logging.getLogger(__name__)
 
 
-async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
+async def export(client: TelegramClient, chat: int) -> None:
     """Export data from a Telegram chat.
 
     Parameters
     ----------
-    client : telethon.TelegramClient
+    client : TelegramClient
         The Telegram client.
     chat : EntityLike
         The chat to export.
 
     """
     entity = await client.get_entity(chat)
+
+    if not isinstance(entity, User):
+        log.error("Chat %s is not a personal chat", chat)
+        return
 
     path = Path(f"{config['export']['path']}/{entity.id}")
 
@@ -53,6 +63,7 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
     with suppress(TypeError):
         await client.end_takeout(success=False)
 
+    takeout: TelegramClient
     async with client.takeout(
         contacts=True,
         users=True,
@@ -67,6 +78,8 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
 
         batch_size = config["export"]["batch_size"]
         batch = []
+
+        message: Message
         async for message in messages:
             batch.append(message)
 
@@ -100,7 +113,7 @@ async def export(client: telethon.TelegramClient, chat: EntityLike) -> None:
             )
 
 
-async def __main(client: telethon.TelegramClient) -> None:
+async def __main(client: TelegramClient) -> None:
     if (
         "ream" in config
         and "log_level" in config["ream"]
@@ -119,16 +132,22 @@ async def __main(client: telethon.TelegramClient) -> None:
         logging.basicConfig(level=logging.INFO)
 
     await client.get_dialogs()
-    for chat in config["export"]["chats"]:
-        log.info("Exporting chat %s...", chat)
-        await export(client, chat)
+
+    try:
+        for chat in config["export"]["chats"]:
+            log.info("Exporting chat %s...", chat)
+            await export(client, chat)
+    except TakeoutInitDelayError:
+        log.info(
+            "Please confirm the takeout session in your Telegram app and restart ream.",
+        )
 
 
 if __name__ == "__main__":
     with Path("ream.toml").open("rb") as f:
         config = tomllib.load(f)
 
-    client = telethon.TelegramClient(
+    client = TelegramClient(
         "ream",
         config["api"]["app_id"],
         config["api"]["app_hash"],

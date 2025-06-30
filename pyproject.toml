@@ -38,12 +38,13 @@ ignore = [
     "TD002", 
     "TD003", 
 
-    # [complex-structure], [too-many-branches], [too-many-statements], [too-many-return-statements]
+    # [complex-structure], [too-many-branches], [too-many-statements], [too-many-locals], [too-many-return-statements]
     # This code heavily uses huge match blocks and if statements, so trying to
     # reduce function complexity will actually make the code less readable.
     "C901", 
     "PLR0911",
     "PLR0912",
+    "PLR0914",
     "PLR0915",
 ]
 
@@ -53,7 +54,13 @@ convention = "numpy"
 [tool.mypy]
 strict = true # Enforce type annotations
 disable_error_code = "name-defined" # Ruff already reports undefined variables
+untyped_calls_exclude = ["telethon.helpers"]
 
 [[tool.mypy.overrides]]
 module = "telethon.*"
-ignore_missing_imports = true
+follow_untyped_imports = true
+disable_error_code = ["arg-type"]
+
+[[tool.mypy.overrides]]
+module = "telethon.client.downloads"
+follow_untyped_imports = false

@@ -1,7 +1,6 @@
 import base64
 
 from telethon.tl.types import (
-    KeyboardButton,
     KeyboardButtonBuy,
     KeyboardButtonCallback,
     KeyboardButtonCopy,
@@ -18,6 +17,7 @@ from telethon.tl.types import (
     KeyboardButtonUserProfile,
     KeyboardButtonWebView,
 )
+from telethon.types import TypeKeyboardButton
 
 
 def __serialize_buttons(rows: list[KeyboardButtonRow]) -> list[list[dict[str, str]]]:
@@ -46,7 +46,7 @@ def __serialize_buttons(rows: list[KeyboardButtonRow]) -> list[list[dict[str, st
     return data
 
 
-def __button_type(button: KeyboardButton) -> str:
+def __button_type(button: TypeKeyboardButton) -> str:
     match button:
         case KeyboardButtonBuy():
             return "buy"
@@ -80,7 +80,7 @@ def __button_type(button: KeyboardButton) -> str:
             return "default"
 
 
-def __button_data(button: KeyboardButton) -> dict[str, str]:
+def __button_data(button: TypeKeyboardButton) -> dict[str, str]:
     match button:
         case KeyboardButtonCallback():
             return {
@@ -97,7 +97,7 @@ def __button_data(button: KeyboardButton) -> dict[str, str]:
         case KeyboardButtonCopy():
             return {"data": button.copy_text}
         case KeyboardButtonUserProfile():
-            return {"data": button.user_id}
+            return {"data": str(button.user_id)}
         case KeyboardButtonSwitchInline():
             return {"data": button.query}
         case _:
