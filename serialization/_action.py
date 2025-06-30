@@ -10,6 +10,8 @@ from telethon.tl.types import (
     MessageActionGiftPremium,
     MessageActionGiftStars,
     MessageActionHistoryClear,
+    MessageActionPaidMessagesPrice,
+    MessageActionPaidMessagesRefunded,
     MessageActionPhoneCall,
     MessageActionPinMessage,
     MessageActionScreenshotTaken,
@@ -144,6 +146,13 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
                 if action.message
                 else "",
             }
+        case MessageActionPaidMessagesPrice():
+            data["action"] = "paid_messages_price_change"
+            data["price_stars"] = action.stars
+        case MessageActionPaidMessagesRefunded():
+            data["action"] = "paid_messages_refund"
+            data["messages_count"] = action.count
+            data["stars_count"] = action.stars
         case _:
             data["action"] = "unknown"
             add_actor = False
