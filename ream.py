@@ -41,6 +41,15 @@ async def export(client: TelegramClient, chat: int) -> None:
         log.error("Chat %s is not a personal chat", chat)
         return
 
+    username = entity.username
+    if not username:
+        if entity.usernames:
+            username = entity.usernames[0].username
+        else:
+            username = entity.first_name
+
+    log.info("Exporting chat %s (@%s)...", chat, username)
+
     path = Path(f"{config['export']['path']}/{entity.id}")
 
     export_json = path / "export.json"
@@ -135,7 +144,6 @@ async def __main(client: TelegramClient) -> None:
 
     try:
         for chat in config["export"]["chats"]:
-            log.info("Exporting chat %s...", chat)
             await export(client, chat)
     except TakeoutInitDelayError:
         log.info(
