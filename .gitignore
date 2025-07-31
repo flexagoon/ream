@@ -9,3 +9,8 @@ test/
 correct/
 exports/
 justfile
+
+# Chat history plotting
+# https://gist.github.com/flexagoon/96212a774200ea736db08f66909ee8d0
+plot.exs
+*.svg
