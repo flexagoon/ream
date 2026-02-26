@@ -69,3 +69,16 @@ Incremental exports are supported, which means that **`ream`** will only export
 messages that aren't already present in the `export.json` file for a given
 chat. You can run **`ream`** as a scheduled job without having to deal with
 duplicate data.
+
+## Updating
+
+After updating **`ream`**, it's recommended to run migrations to update your 
+exports to the latest format version, in case there have been any changes.
+
+```bash
+uv run migrate.py
+```
+
+> [!NOTE]
+> Migrations may take a long time depending on how many messages your exports
+> have and how outdated they are.
