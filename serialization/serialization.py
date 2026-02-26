@@ -78,6 +78,7 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
         data |= await __serialize_peer(message.client, message.from_id, "from")
 
         if forward := message.forward:
+            # If sent by a user
             if sender := forward.sender:
                 if sender.first_name:
                     data["forwarded_from"] = (
@@ -89,8 +90,12 @@ async def __try_serialize(message: Message, path: Path) -> dict[str, Any]:
                     data["forwarded_from"] = None
                 else:
                     data["forwarded_from"] = sender.id
+
+                data["forwarded_from_id"] = sender.id
+            # If sent by a channel
             elif chat := forward.chat:
                 data["forwarded_from"] = chat.title or chat.id
+                data["forwarded_from_id"] = chat.id
             else:
                 data["forwarded_from"] = forward.original_fwd.from_name
 
