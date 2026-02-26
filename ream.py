@@ -9,7 +9,7 @@ import logging
 import tomllib
 from contextlib import suppress
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from telethon import TelegramClient
 from telethon.errors.rpcerrorlist import TakeoutInitDelayError
@@ -24,13 +24,15 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
-async def export(client: TelegramClient, chat: int) -> None:
+async def export(client: TelegramClient, config: dict[str, Any], chat: int) -> None:
     """Export data from a Telegram chat.
 
     Parameters
     ----------
     client : TelegramClient
         The Telegram client.
+    config : dict[str, Any]
+        The configuration dictionary (see ream.toml).
     chat : int
         The chat to export.
 
@@ -122,7 +124,7 @@ async def export(client: TelegramClient, chat: int) -> None:
             )
 
 
-async def __main(client: TelegramClient) -> None:
+async def __main(client: TelegramClient, config: dict[str, Any]) -> None:
     if (
         "ream" in config
         and "log_level" in config["ream"]
@@ -144,7 +146,7 @@ async def __main(client: TelegramClient) -> None:
 
     try:
         for chat in config["export"]["chats"]:
-            await export(client, chat)
+            await export(client, config, chat)
     except TakeoutInitDelayError:
         log.info(
             "Please confirm the takeout session in your Telegram app and restart ream.",
@@ -163,4 +165,4 @@ if __name__ == "__main__":
     )
 
     with client:
-        client.loop.run_until_complete(__main(client))
+        client.loop.run_until_complete(__main(client, config))
