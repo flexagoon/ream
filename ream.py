@@ -142,8 +142,6 @@ async def __main(client: TelegramClient, config: dict[str, Any]) -> None:
     else:
         logging.basicConfig(level=logging.INFO)
 
-    await client.get_dialogs()
-
     try:
         for chat in config["export"]["chats"]:
             await export(client, config, chat)
