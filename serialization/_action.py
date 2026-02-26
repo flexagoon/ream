@@ -4,6 +4,7 @@ from typing import Any
 
 from telethon.tl.custom.message import Message
 from telethon.tl.types import (
+    ChatTheme,
     MessageActionContactSignUp,
     MessageActionGameScore,
     MessageActionGeoProximityReached,
@@ -88,8 +89,8 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["action"] = "set_messages_ttl"
         case MessageActionSetChatTheme():
             data = {}
-            if action.emoticon:
-                data["emoticon"] = action.emoticon
+            if isinstance(action.theme, ChatTheme) and action.theme.emoticon:
+                data["emoticon"] = action.theme.emoticon
             data["action"] = "edit_chat_theme"
         case MessageActionGiftPremium():
             data = {}
