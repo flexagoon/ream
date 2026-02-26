@@ -96,7 +96,7 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             if action.amount:
                 data["cost"] = action.amount
             if action.months:
-                data["months"] = action.months
+                data["days"] = action.months * 30
             data["action"] = "send_premium_gift"
         case MessageActionSuggestProfilePhoto():
             data["action"] = "suggest_profile_photo"
