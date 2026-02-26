@@ -31,7 +31,7 @@ async def export(client: TelegramClient, chat: int) -> None:
     ----------
     client : TelegramClient
         The Telegram client.
-    chat : EntityLike
+    chat : int
         The chat to export.
 
     """
