@@ -19,6 +19,7 @@ from telethon.tl.types import (
     MessageActionSetChatWallPaper,
     MessageActionSetMessagesTTL,
     MessageActionStarGift,
+    MessageActionSuggestBirthday,
     MessageActionSuggestProfilePhoto,
     PhoneCallDiscardReasonBusy,
     PhoneCallDiscardReasonDisconnect,
@@ -168,6 +169,12 @@ async def __serialize_action(message: Message, path: Path) -> dict[str, Any]:
             data["action"] = "paid_messages_refund"
             data["messages_count"] = action.count
             data["stars_count"] = action.stars
+        case MessageActionSuggestBirthday():
+            data["action"] = "suggest_birthday"
+            data["day"] = action.birthday.day
+            data["month"] = action.birthday.month
+            if action.birthday.year:
+                data["year"] = action.birthday.year
         case _:
             data["action"] = "unknown"
             add_actor = False
