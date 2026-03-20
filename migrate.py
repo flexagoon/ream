@@ -7,6 +7,7 @@ import logging
 import shutil
 import tomllib
 from contextlib import suppress
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
@@ -78,23 +79,29 @@ async def migrate(client: TelegramClient, config: dict[str, Any], chat_id: int) 
     path = Path(f"{config['export']['path']}/{chat_id}")
 
     version_file = path / "version"
-    version = int(version_file.read_text()) if version_file.exists() else 1
+    version_data = version_file.read_text() if version_file.exists() else "1|1|0"
+    [version, next_version, last_migrated] = map(int, version_data.split("|"))
 
     if version >= LAST_VERSION:
         return
+
+    start = last_migrated + 1 if next_version == LAST_VERSION else 0
 
     export_json = path / "export.json"
     if not export_json.exists():
         return
 
-    shutil.copy(export_json, path / "export.json.bak")
+    shutil.copy(
+        export_json,
+        path / f"export.json.bak.{datetime.now(tz=UTC).isoformat()}",
+    )
 
     chat_data = json.load(export_json.open())
 
     batch_size = config["export"]["batch_size"]
     batch = []
 
-    for i in range(len(chat_data["messages"])):
+    for i in range(start, len(chat_data["messages"])):
         batch.append(i)
 
         if len(batch) >= batch_size:
@@ -108,6 +115,12 @@ async def migrate(client: TelegramClient, config: dict[str, Any], chat_id: int) 
             for msg_id, new_message in zip(batch, new_messages, strict=True):
                 chat_data["messages"][msg_id] = new_message
 
+            log.info(
+                "Migrated %s/%s messages...",
+                batch[-1] + 1,
+                len(chat_data["messages"]),
+            )
+
             export_json.write_text(
                 json.dumps(
                     chat_data,
@@ -116,6 +129,7 @@ async def migrate(client: TelegramClient, config: dict[str, Any], chat_id: int) 
                 ),
                 encoding="utf-8",
             )
+            version_file.write_text(f"{version}|{LAST_VERSION}|{batch[-1]}")
 
             batch = []
     if batch:
@@ -138,7 +152,7 @@ async def migrate(client: TelegramClient, config: dict[str, Any], chat_id: int) 
             encoding="utf-8",
         )
 
-    version_file.write_text(str(LAST_VERSION))
+    version_file.write_text(f"{LAST_VERSION}|{LAST_VERSION}|0")
 
 
 async def __main(client: TelegramClient, config: dict[str, Any]) -> None:
