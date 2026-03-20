@@ -5,12 +5,14 @@ requires-python = ">=3.13"
 dependencies = [
     "telethon>=1.40.0",
     "cryptg>=0.5.0.post0",
+    "qrcode>=8.2",
 ]
 
 [dependency-groups]
 dev = [
     "mypy>=1.16.1", # Type checking
     "ruff>=0.12.0", # Linting and formatting
+    "types-qrcode>=8.2.0.20250914",
 ]
 
 [tool.ruff.lint]

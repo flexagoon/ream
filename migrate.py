@@ -11,7 +11,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+import qrcode
 from telethon import TelegramClient
+from telethon.errors import SessionPasswordNeededError
 from telethon.tl.custom.message import Message
 
 log = logging.getLogger(__name__)
@@ -173,6 +175,22 @@ async def __main(client: TelegramClient, config: dict[str, Any]) -> None:
     else:
         logging.basicConfig(level=logging.INFO)
 
+    if not client.is_connected():
+        await client.connect()
+
+    if not await client.is_user_authorized():
+        qr_login = await client.qr_login()
+        qr = qrcode.QRCode()
+        qr.add_data(qr_login.url)
+        qr.print_ascii()
+        try:
+            await qr_login.wait()
+        except SessionPasswordNeededError:
+            password = input(  # noqa: ASYNC250
+                "Two-step verification is enabled. Please enter your password: "
+            )
+            await client.sign_in(password=password)
+
     with suppress(TypeError):
         await client.end_takeout(success=False)
 
@@ -192,5 +210,4 @@ if __name__ == "__main__":
         app_version="1.0.0",
     )
 
-    with client:
-        client.loop.run_until_complete(__main(client, config))
+    client.loop.run_until_complete(__main(client, config))
