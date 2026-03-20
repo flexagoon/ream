@@ -196,7 +196,13 @@ async def __main(client: TelegramClient, config: dict[str, Any]) -> None:
 
     async with client.takeout(users=True) as takeout:
         for chat in config["export"]["chats"]:
-            await migrate(takeout, config, chat)
+            try:
+                await migrate(takeout, config, chat)
+            except KeyboardInterrupt:
+                await client.end_takeout(success=True)
+                return
+
+    await client.end_takeout(success=True)
 
 
 if __name__ == "__main__":
